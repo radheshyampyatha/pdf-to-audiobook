@@ -18,35 +18,19 @@ let selectedLang = 'en';
 let selectedVoice = 'luna';
 let currentAudio = null;
 
-// ─── Voice Data (15 English + 2 Nepali) ───
-const VOICES = {
-    en: [
-        { key: 'luna',   name: 'Luna',   desc: 'Warm & Gentle' },
-        { key: 'marcus', name: 'Marcus', desc: 'Deep & Calm' },
-        { key: 'sophie', name: 'Sophie', desc: 'Sweet & Playful' },
-        { key: 'oliver', name: 'Oliver', desc: 'Wise & Gentle' },
-        { key: 'emma',   name: 'Emma',   desc: 'Elegant & Poised' },
-        { key: 'nova',   name: 'Nova',   desc: 'Soft & Dreamy' },
-        { key: 'atlas',  name: 'Atlas',  desc: 'Bold & Commanding' },
-        { key: 'ivy',    name: 'Ivy',    desc: 'Bright & Cheerful' },
-        { key: 'sage',   name: 'Sage',   desc: 'Smooth & Reassuring' },
-        { key: 'ruby',   name: 'Ruby',   desc: 'Rich & Expressive' },
-        { key: 'finn',   name: 'Finn',   desc: 'Husky & Mysterious' },
-        { key: 'aria',   name: 'Aria',   desc: 'Clear & Professional' },
-        { key: 'rex',    name: 'Rex',    desc: 'Gravelly & Rugged' },
-        { key: 'dylan',  name: 'Dylan',  desc: 'Velvety & Soothing' },
-        { key: 'frost',  name: 'Frost',  desc: 'Cool & British' },
-    ],
-    ne: [
-        { key: 'hemkala', name: 'Hemkala', desc: 'Gentle & Soft' },
-        { key: 'sagar',   name: 'Sagar',   desc: 'Calm & Steady' },
-    ],
-};
+// ─── Voice Data (loaded from server — single source of truth) ───
+let VOICES = {};
 
 // ─── Check Status ───
 fetch('/api/status').then(r => r.json()).then(data => {
     statusBadge.classList.add(data.online ? 'online' : 'offline');
     statusText.textContent = data.online ? 'Online HD' : 'Offline';
+});
+
+// ─── Load Voices ───
+fetch('/api/voices').then(r => r.json()).then(data => {
+    VOICES = data.voices;
+    renderVoices();
 });
 
 // ─── Language Buttons ───
@@ -61,13 +45,14 @@ langRow.querySelectorAll('.lang-btn').forEach(btn => {
 
 // ─── Voice Rendering ───
 function renderVoices() {
-    const voices = VOICES[selectedLang] || VOICES.en;
+    const voices = VOICES[selectedLang] || [];
+    if (!voices.length) return;
     selectedVoice = voices[0].key;
 
     voiceGrid.innerHTML = voices.map((v, i) => `
         <div class="voice-card${i === 0 ? ' active' : ''}" data-voice="${v.key}">
             <div class="voice-info">
-                <span class="voice-name">${v.name}</span>
+                <span class="voice-name">${v.label}</span>
                 <span class="voice-desc">${v.desc}</span>
             </div>
             <div class="voice-playing hidden">
@@ -116,17 +101,10 @@ function playVoicePreview(voiceKey) {
     });
 }
 
-function stopVoicePreview(card) {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
-    if (card) card.querySelector('.voice-playing').classList.add('hidden');
-}
-
 function stopCurrentAudio() {
     if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
     voiceGrid.querySelectorAll('.voice-playing').forEach(el => el.classList.add('hidden'));
 }
-
-renderVoices();
 
 // ─── Drag & Drop ───
 dropzone.addEventListener('click', () => fileInput.click());

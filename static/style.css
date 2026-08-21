@@ -201,7 +201,6 @@ footer p::before { content: ''; width: 5px; height: 5px; border-radius: 50%; bac
 /* Responsive */
 @media (max-width: 600px) {
     header { padding: 1.5rem 1.25rem 0; }
-    .tagline { display: none; }
     .hero { padding: 2.5rem 1.25rem 1.5rem; }
     main { padding: 0 1.25rem 3rem; }
     .step-card { padding: 1.5rem; }
