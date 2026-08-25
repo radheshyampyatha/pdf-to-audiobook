@@ -1,0 +1,13 @@
+# Virtual environment
+venv/
+
+# Runtime state
+.server.pid
+__pycache__/
+*.pyc
+
+# User uploads & generated audio
+uploads/*
+!uploads/.gitkeep
+output/*
+!output/.gitkeep

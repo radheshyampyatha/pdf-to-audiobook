@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to MP3</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230e0e10' stroke='%23f59e0b' stroke-width='4'/><text x='50' y='62' text-anchor='middle' font-size='36' fill='%23f59e0b'>PDF</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="grain"></div>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="var(--amber)" stroke-width="1.5"/>
+                    <path d="M9 10h4v8H9z" fill="var(--amber)" opacity="0.2"/>
+                    <path d="M14 10h4v8h-4z" fill="var(--amber)" opacity="0.4"/>
+                    <path d="M19 12v4" stroke="var(--amber)" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="logo-text">PDF to MP3</span>
+        </div>
+        <div class="status-badge" id="statusBadge">
+            <span class="status-dot"></span>
+            <span id="statusText">Checking...</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Listen to your<br><em>documents</em></h1>
+            <p class="subtitle">Upload a PDF and hear it brought to life.</p>
+        </section>
+
+        <!-- Step 1: Upload -->
+        <div class="step-card" id="uploadStep">
+            <div class="dropzone" id="dropzone">
+                <input type="file" id="fileInput" accept=".pdf" hidden>
+                <div class="dropzone-content">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <path d="M24 32V16m0 0l-8 8m8-8l8 8" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="4" y="4" width="40" height="40" rx="12" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                        </svg>
+                    </div>
+                    <p class="drop-label">Drop your PDF here</p>
+                    <p class="drop-sub">or click to browse</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Choose Voice -->
+        <div class="step-card hidden" id="previewStep">
+            <div class="preview-header">
+                <div class="file-badge">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="1" width="14" height="18" rx="2" stroke="var(--amber)" stroke-width="1.5"/>
+                        <path d="M7 7h6M7 10h6M7 13h3" stroke="var(--amber)" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                    <span id="fileName">document.pdf</span>
+                </div>
+                <button class="btn-ghost" id="removeFile" title="Remove">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M5 5l8 8m0-8l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="stat-value" id="statPages">0</span>
+                    <span class="stat-label">Pages</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value" id="statWords">0</span>
+                    <span class="stat-label">Words</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value" id="statDuration">~0 min</span>
+                    <span class="stat-label">Audio</span>
+                </div>
+            </div>
+
+            <!-- Language -->
+            <div class="option-group" style="margin-bottom: 1.25rem;">
+                <label class="option-label">Language</label>
+                <div class="lang-row" id="langRow">
+                    <button class="lang-btn active" data-lang="en"><span class="lang-flag">🇬🇧</span> English</button>
+                    <button class="lang-btn" data-lang="ne"><span class="lang-flag">🇳🇵</span> Nepali</button>
+                </div>
+            </div>
+
+            <!-- Voice Personality -->
+            <div class="option-group" style="margin-bottom: 1.5rem;">
+                <label class="option-label">Narrator <span class="label-hint">click to preview voice</span></label>
+                <div class="voice-grid" id="voiceGrid"></div>
+            </div>
+
+            <button class="btn-primary" id="convertBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M8 5v10l7-5-7-5z" fill="currentColor"/>
+                </svg>
+                Convert to Audiobook
+            </button>
+        </div>
+
+        <!-- Step 3: Converting -->
+        <div class="step-card hidden" id="convertingStep">
+            <div class="converting-visual">
+                <div class="wave-container">
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+            </div>
+            <h2 class="converting-title">Creating your audiobook</h2>
+            <p class="converting-sub" id="convertingStatus">Preparing...</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Done -->
+        <div class="step-card hidden" id="doneStep">
+            <div class="done-icon">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <circle cx="32" cy="32" r="30" stroke="var(--amber)" stroke-width="2"/>
+                    <path d="M20 32l8 8 16-16" stroke="var(--amber)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h2 class="done-title">Your audiobook is ready</h2>
+            <div class="done-stats">
+                <span id="doneDuration"></span>
+                <span class="dot"></span>
+                <span id="doneSize"></span>
+                <span class="dot"></span>
+                <span id="doneVoice"></span>
+            </div>
+            <a class="btn-primary" id="downloadBtn" href="#" download>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 3v10m0 0l-4-4m4 4l4-4M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Download MP3
+            </a>
+            <div class="save-location" id="saveLocation">
+                <span id="savePath"></span>
+            </div>
+            <button class="btn-ghost full-width" id="startOver">Convert another</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>All files saved locally on your machine.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

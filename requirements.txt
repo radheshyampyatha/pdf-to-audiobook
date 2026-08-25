@@ -1,0 +1,5 @@
+flask==3.1.1
+flask-limiter==3.12
+PyPDF2==3.0.1
+pyttsx3==2.99
+edge-tts==7.2.8
